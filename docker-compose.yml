@@ -1,0 +1,14 @@
+# testing emulator usage. Still missing features that would make it a viable option for local testing/development. 
+services:
+  cosmosdb:
+    container_name: cosmosdb
+    hostname: cosmosdb
+    image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-preview
+    ports:
+      - "8081:8081"
+      - "1234:1234"
+      - "9712:9712"
+    environment:
+      - PROTOCOL=http
+      - EXPLORER_PROTOCOL=http
+      
