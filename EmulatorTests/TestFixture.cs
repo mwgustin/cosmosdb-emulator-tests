@@ -27,29 +27,42 @@ public class TestFixture : IAsyncLifetime
     {
         await ClearData();
     }
-    
 
-    private async Task SeedData()
-    {
-        await Container.UpsertItemAsync(new TestItem
-        {
-            Id = "1",
-            Name = "Test Item 1 pk1",
-            PartitionKey = "pk1"
-        });
-        await Container.UpsertItemAsync(new TestItem
-        {
-            Id = "1",
-            Name = "Test Item 1 pk2",
-            PartitionKey = "pk2"
-        });
 
-        await Container.UpsertItemAsync(new TestItem
+        private async Task SeedData()
         {
-            Id = "2",
-            Name = "Test Item 2 pk3",
-            PartitionKey = "pk3"
-        });
+            await Container.UpsertItemAsync(new TestItem
+            {
+                Id = "1",
+                Name = "Test Item 1 pk1",
+                PartitionKey = "pk1"
+            });
+            await Container.UpsertItemAsync(new TestItem
+            {
+                Id = "1",
+                Name = "Test Item 1 pk2",
+                PartitionKey = "pk2"
+            });
+
+            await Container.UpsertItemAsync(new TestItem
+            {
+                Id = "2",
+                Name = "Test Item 2 pk3",
+                PartitionKey = "pk3"
+            });
+
+            await Container.UpsertItemAsync(new TestItem()
+            {
+                Id = "Test1",
+                Name = "TestItem",
+                PartitionKey = "pk4"
+            });
+            await Container.UpsertItemAsync(new TestItem()
+            {
+                Id = "Test2",
+                Name = "TestItem",
+                PartitionKey = "pk5"
+            });
     }
 
     private async Task ClearData()

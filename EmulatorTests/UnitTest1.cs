@@ -46,6 +46,24 @@ public class UnitTest1 : IAsyncLifetime
     }
 
 
+    // fails. Similar to prior tests, but demonstrates that it's unrelated to the id field and applies to any property.
+    // succeeds with real DB. 
+    [Fact]
+    public async Task QueryByName_SeparateId_SeparatePK()
+    {
+        var query = "select * from c where c.Name = 'TestItem'";
+        var iterator = fixture.Container.GetItemQueryIterator<TestItem>(query, requestOptions: new QueryRequestOptions()
+        {
+            PartitionKey = new PartitionKey("pk4")
+        });
+        var response = await iterator.ReadNextAsync();
+
+        Assert.Single(response); //FAILS. returns both items with Name 'TestItem', should only return the one with pk4.
+        Assert.Equal("TestItem", response.First().Name);
+        Assert.Equal("pk4", response.First().PartitionKey);
+    }
+
+
     //fails.  This should return the count of the items in the fixture.Container across partitions (3), but it throws a serialization exception.
     // succeeds with real DB.
     [Fact]
