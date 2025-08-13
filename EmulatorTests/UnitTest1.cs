@@ -8,28 +8,6 @@ namespace EmulatorTests;
 
 public class UnitTest1 : IAsyncLifetime
 {
-    Microsoft.Azure.Cosmos.Container container = null!; // Initialize this in the InitializeAsync method
-
-    public async Task DisposeAsync()
-    {
-        await ClearData();
-    }
-
-    public async Task InitializeAsync()
-    {
-        var builder = new CosmosClientBuilder("AccountEndpoint=http://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==");
-        builder.WithConnectionModeGateway();
-        var client = builder.Build();
-
-        var dbResp = await client.CreateDatabaseIfNotExistsAsync("TestDatabase");
-        var containerResp = await dbResp.Database.CreateContainerIfNotExistsAsync("TestContainer", "/PartitionKey");
-        container = containerResp.Container;
-
-
-        await ClearData();
-        await SeedData();
-    }
-
     //succeeds.  This is the expected behavior when reading by id with a partition key.
     [Fact]
     public async Task ReadById()
@@ -51,7 +29,7 @@ public class UnitTest1 : IAsyncLifetime
             PartitionKey = new PartitionKey("pk1")
         });
         var response = await iterator.ReadNextAsync();
-        
+
         Assert.Single(response); // FAILS.  Returns both items with id 1.
         Assert.Equal("Test Item 1 pk1", response.First().Name);
     }
@@ -84,6 +62,30 @@ public class UnitTest1 : IAsyncLifetime
         Assert.Single(response);
         Assert.Equal(3, response.First());
     }
+   
+    // Simple test setup and teardown. 
+    Microsoft.Azure.Cosmos.Container container = null!; // Initialize this in the InitializeAsync method
+
+    public async Task InitializeAsync()
+    {
+        var builder = new CosmosClientBuilder("AccountEndpoint=http://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==");
+        builder.WithConnectionModeGateway();
+        var client = builder.Build();
+
+        var dbResp = await client.CreateDatabaseIfNotExistsAsync("TestDatabase");
+        var containerResp = await dbResp.Database.CreateContainerIfNotExistsAsync("TestContainer", "/PartitionKey");
+        container = containerResp.Container;
+
+
+        await ClearData();
+        await SeedData();
+    }
+
+    public async Task DisposeAsync()
+    {
+        await ClearData();
+    }
+    
 
     private async Task SeedData()
     {
@@ -123,11 +125,12 @@ public class UnitTest1 : IAsyncLifetime
 }
 
 
+// test class
 public record TestItem
 {
     [JsonProperty("id")]
     [JsonPropertyName("id")]
-    public required string Id { get; init; } =  Guid.NewGuid().ToString();
+    public required string Id { get; init; } = Guid.NewGuid().ToString();
     public required string Name { get; init; }
     public required string PartitionKey { get; init; }
 }
