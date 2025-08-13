@@ -30,6 +30,7 @@ public class UnitTest1 : IAsyncLifetime
         await SeedData();
     }
 
+    //succeeds.  This is the expected behavior when reading by id with a partition key.
     [Fact]
     public async Task ReadById()
     {
@@ -39,6 +40,8 @@ public class UnitTest1 : IAsyncLifetime
 
     }
 
+    //fails. This should be equivalent to the above because we specify the partition Key, but it returns both items with id 1.
+    // succeeds with real DB.
     [Fact]
     public async Task QueryById_with_SharedId_SeparatePK()
     {
@@ -53,6 +56,7 @@ public class UnitTest1 : IAsyncLifetime
         Assert.Equal("Test Item 1 pk1", response.First().Name);
     }
 
+    //same as above, but succeeds because it's the only item with id 2
     [Fact]
     public async Task QueryById_with_SeparateId_SeparatePK()
     {
@@ -65,6 +69,20 @@ public class UnitTest1 : IAsyncLifetime
 
         Assert.Single(response);
         Assert.Equal("Test Item 2 pk3", response.First().Name);
+    }
+
+
+    //fails.  This should return the count of the items in the container across partitions (3), but it throws a serialization exception.
+    // succeeds with real DB.
+    [Fact]
+    public async Task CountTest()
+    {
+        var query = "SELECT value COUNT(1) FROM c";
+        var iterator = container.GetItemQueryIterator<int>(query);
+        var response = await iterator.ReadNextAsync();
+
+        Assert.Single(response);
+        Assert.Equal(3, response.First());
     }
 
     private async Task SeedData()
